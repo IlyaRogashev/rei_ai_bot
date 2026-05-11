@@ -1,3 +1,2 @@
-/diaries/
 /.env
-git rm --cached .env
+/diaries/
