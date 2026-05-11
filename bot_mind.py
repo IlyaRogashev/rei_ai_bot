@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 from huggingface_hub import AsyncInferenceClient
+#from web_search import search_internet, needs_search
+
+
 
 load_dotenv()
 ai_token = os.getenv("AI_TOKEN")
@@ -20,7 +23,7 @@ except FileNotFoundError:
 
 
 client = AsyncInferenceClient(
-    model="meta-llama/Llama-3.1-8B-Instruct",
+    model="meta-llama/Meta-Llama-3-8B-Instruct",
     token=ai_token
 )
 
@@ -28,7 +31,11 @@ async def get_ai_response(text: str, history: list = None) -> str:
     if history is None:
         history = []
 
-    messages = [{"role": "system", "content": model_context}]
+    search_data = ""
+    #тут я думал сделать ии поиск в интернете, но получилась полная хуйня, так что это напотом
+    full_system_prompt = model_context
+    
+    messages = [{"role": "system", "content": full_system_prompt}]
     messages.extend(history)
     messages.append({"role": "user", "content": text})
 
@@ -37,11 +44,12 @@ async def get_ai_response(text: str, history: list = None) -> str:
             messages=messages,
             max_tokens=500,
             stream=False,
-            temperature=0.2
+            temperature=0.0 # Чтобы не было пиздежа)
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"Ошибка ИИ: {e}"
+
 
 
 async def summarize_to_diary(old_diary: str, history: list) -> str:
@@ -63,7 +71,7 @@ async def summarize_to_diary(old_diary: str, history: list) -> str:
 
     try:
         response = await client.chat.completions.create(
-            model="local-model",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             messages=messages,
             max_tokens=500,
             temperature=0.2,

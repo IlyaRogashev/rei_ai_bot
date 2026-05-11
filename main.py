@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters, CommandHandler
@@ -38,7 +39,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if 'history' not in context.user_data:
         context.user_data['history'] = []
 
-#Передаем дневник ии
+
+# Передаем дневник ии
     memory_context = [{"role": "system", "content": f"Твои записи о юзере:\n{diary_content}"}]
     full_history = memory_context + context.user_data['history']
 
@@ -49,14 +51,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 #_______________________________________________________________________________________________________________________
 #Получение ответа
     ai_answer = await get_ai_response(user_text, full_history)
-
+    try:
+        typing_duration = min(len(ai_answer) * 0.04, 6.0) 
+        typing_duration += random.uniform(0.5, 1.5)
+    
+        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+        await asyncio.sleep(typing_duration)
+    except Exception as e:
+        print(f"Ошибка при имитации печати: {e}")
 #Оперативка
     context.user_data['history'].append({"role": "user", "content": user_text})
     context.user_data['history'].append({"role": "assistant", "content": ai_answer})
 
-#ЛОГИКА ОБНОВЛЕНИЯ ДНЕВНИКА
+# Обновление дневника
     if len(context.user_data['history']) >= 6:
         history_copy = context.user_data['history'].copy()
+        context.user_data['history'] = []
 
         async def background_diary_update(h_copy, d_path, d_content):
             try:
@@ -68,12 +78,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 print(f"Ошибка фонового дневника: {e}")
 
         asyncio.create_task(background_diary_update(history_copy, diary_path, diary_content))
-        context.user_data['history'] = []
-    try:
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-        ai_answer = await get_ai_response(user_text, full_history)
-        await update.message.reply_text(ai_answer)
 
+    try:
+        await update.message.reply_text(ai_answer)
     except Exception as e:
         logging.error(f"Ошибка при отправке ответа: {e}")
 
