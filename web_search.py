@@ -16,12 +16,12 @@ async def search_internet(query: str) -> str:
         return ""
 
 async def needs_search(text: str, client) -> bool:
-    # 1. Простая проверка на короткие фразы
+    
     words = text.lower().split()
     if len(words) < 2 and words[0] in ["привет", "хай", "ку", "здравствуй"]:
         return False
 
-    # 2. Промпт с примерами
+    
     decision_prompt = (
         "Ты — диспетчер поиска. Отвечай только ДА, если вопрос требует поиска фактов, "
         "биографий, дат или новостей. Отвечай НЕТ, если это простое общение или пользователь спрашивает личные факты о тебе.\n"
