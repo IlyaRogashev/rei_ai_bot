@@ -17,8 +17,8 @@
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com[ТВОЙ_НИК]/[ИМЯ_РЕПО].git
-cd [ИМЯ_РЕПО]
+git clone https://github.com/fckingNoTomorrow/rei_ai_bot.git
+cd rei_ai_bot
 ```
 
 ### 2. Установка зависимостей
